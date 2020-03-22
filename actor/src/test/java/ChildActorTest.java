@@ -40,6 +40,6 @@ public class ChildActorTest {
         ).toCompletableFuture().join();
 
 
-        assertThat(response.getSearchSystemResults().get(0)).isNotNull();
+        assertThat(response.getSearchSystemResults()).isNotEmpty();
     }
 }
