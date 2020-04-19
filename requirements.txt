@@ -1,5 +1,0 @@
-mongoengine
-Flask==1.1.2
-flask_mongoengine
-
-
