@@ -1,34 +1,38 @@
 import unittest
 
 from app import app
-from db import db
 
 
 class MyTestCase(unittest.TestCase):
     def setUp(self):
         self.app = app.test_client()
-        self.db = db.get_db()
 
-    def test(self):
-        user_payload = {
-            "name": "Alexander",
-            "amount": 10000
-        }
-        company_payload = {
-            "name": "Bedrock inc.",
-            "stocks": 100,
-            "currency": 500
-        }
-        response = self.app.post('/users', headers={"Content-Type": "application/json"}, data=user_payload)
-        self.assertEqual(200, response.status_code)
+        user_payload = dict(name="Fill", amount=1000)
+        company_payload = dict(name="Alphabet", stocks=100, currency=500)
+        self.app.post('/users', headers={"Content-Type": "application/json"}, data=user_payload)
+        self.app.post('/exchange', headers={"Content-Type": "application/json"}, data=company_payload)
 
-        response = self.app.post('/exchange', headers={"Content-Type": "application/json"}, data=company_payload)
-        self.assertEqual(200, response.status_code)
+    def test_buy_and_sell_shares(self):
+        payload = dict(company_name="Alphabet", number=1)
+        response = self.app.post('/users/Fill/shares/buy', headers={"Content-Type": "application/json"}, data=payload)
+        self.assertEqual(response.status_code, 200, msg=response.get_data(as_text=True))
 
+        payload = dict(company_name="Alphabet", number=1)
+        response = self.app.post('/users/Fill/shares/sell', headers={"Content-Type": "application/json"}, data=payload)
+        self.assertEqual(response.status_code, 200, msg=response.get_data(as_text=True))
+
+    def test_company_doesnt_exists(self):
+        payload = dict(company_name="Umbrella", number=1)
+        response = self.app.post('/users/Fill/shares/buy', headers={"Content-Type": "application/json"}, data=payload)
+        self.assertEqual(response.status_code, 400)
+
+    def test_not_enough_shares(self):
+        payload = dict(company_name="Alphabet", number=1)
+        response = self.app.post('/users/Fill/shares/sell', headers={"Content-Type": "application/json"}, data=payload)
+        self.assertEqual(response.status_code, 400)
 
     def tearDown(self):
-        for collection in self.db.list_collection_names():
-            self.db.drop_collection(collection)
+        pass
 
 
 if __name__ == '__main__':
